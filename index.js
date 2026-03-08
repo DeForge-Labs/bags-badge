@@ -101,8 +101,8 @@ app.get("/v1/badge.svg", async (req, res) => {
         `<rect width="${finalWidth}" height="${finalHeight}"`,
       )
       .replace(
-        "H45V54H6C2.68629 54 0 51.3137 0 48V6Z",
-        `H45V${finalHeight}H6C2.68629 ${finalHeight} 0 ${finalHeight - 2.6863} 0 ${finalHeight - 6}V6Z`,
+        "H45V54H8C3.58172 54 0 50.4183 0 46V8Z",
+        `H45V${finalHeight}H8C3.58172 ${finalHeight} 0 ${finalHeight - 3.5817} 0 ${finalHeight - 8}V8Z`,
       )
       .replace(/x="240"/g, `x="${finalWidth - 10}"`);
 
