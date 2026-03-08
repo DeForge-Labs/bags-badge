@@ -1,0 +1,27 @@
+{
+  "name": "bags-badge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeForge-Labs/bags-badge.git"
+  },
+  "author": "Anoy Roy Chowdhury",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DeForge-Labs/bags-badge/issues"
+  },
+  "homepage": "https://github.com/DeForge-Labs/bags-badge#readme",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "nodemon": "^3.1.14"
+  },
+  "type": "module"
+}
