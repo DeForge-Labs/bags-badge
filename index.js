@@ -28,6 +28,28 @@ app.use(express.static(path.join(__dirname, "public")));
 const svgTemplatePath = path.join(__dirname, "lib", "badge.svg");
 const svgTemplate = fs.readFileSync(svgTemplatePath, "utf-8");
 
+const badgeCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_MAX_SIZE = 500;
+
+function getCached(key) {
+  const entry = badgeCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    badgeCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setCached(key, value) {
+  if (badgeCache.size >= CACHE_MAX_SIZE) {
+    // Evict the oldest entry
+    badgeCache.delete(badgeCache.keys().next().value);
+  }
+  badgeCache.set(key, { value, timestamp: Date.now() });
+}
+
 function formatValue(value) {
   if (value >= 1e9) return "$" + (value / 1e9).toFixed(2) + "B";
   if (value >= 1e6) return "$" + (value / 1e6).toFixed(2) + "M";
@@ -41,6 +63,15 @@ app.get("/v1/badge.svg", async (req, res) => {
 
     if (!address) {
       return res.status(400).send("Missing address parameter");
+    }
+
+    const cacheKey = `${address}-${theme}-${width || ""}-${height || ""}`;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      res.setHeader("Content-Type", "image/svg+xml");
+      res.setHeader("Cache-Control", "public, max-age=300");
+      res.setHeader("X-Cache", "HIT");
+      return res.send(cached);
     }
 
     const apiUrl = `https://datapi.jup.ag/v1/assets/search?query=${address}`;
@@ -106,8 +137,11 @@ app.get("/v1/badge.svg", async (req, res) => {
       )
       .replace(/x="240"/g, `x="${finalWidth - 10}"`);
 
+    setCached(cacheKey, finalSvg);
+
     res.setHeader("Content-Type", "image/svg+xml");
-    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.setHeader("X-Cache", "MISS");
     res.send(finalSvg);
   } catch (error) {
     console.error(error);
